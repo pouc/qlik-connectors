@@ -203,13 +203,13 @@ namespace QlikConnector
 
                         currParam.ToList().ForEach(kv =>
                         {
-                            Match mWhere = Regex.Match(kv.Key, "(\\s*AND)?\\s*(?<param>[^\\s]+)\\s*");
+                            Match mWhere = Regex.Match(kv.Key, "^(\\s*AND)?\\s*((?<param>[^\\s]+)|\\[(?<param>[^\\]]+)\\])\\s*$");
 
                             if (mWhere.Success)
                             {
                                 QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("ExtractQuery() : {0}, {1}!", mWhere.Groups["param"].Value, kv.Value));
 
-                                myArgs[mWhere.Groups["param"].Value] = kv.Value;
+                                myArgs[mWhere.Groups["param"].Value.Trim().Replace("[", "").Replace("]", "")] = kv.Value.Trim();
                             }
                             else
                             {

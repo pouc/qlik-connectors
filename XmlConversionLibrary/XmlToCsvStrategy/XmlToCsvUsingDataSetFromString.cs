@@ -53,20 +53,6 @@ namespace Moor.XmlConversionLibrary.XmlToCsvStrategy
         public void qualify(XmlNode n, string sep)
         {
 
-            /*
-            int initialCapacity = n.ChildNodes.Count;
-            int numProcs = Environment.ProcessorCount;
-            int concurrencyLevel = numProcs * 2;
-
-            ConcurrentDictionary<XmlNode, XmlNode> rename = new ConcurrentDictionary<XmlNode, XmlNode>(concurrencyLevel, initialCapacity);
-
-            
-            for (int i = 0; i < initialCapacity / numProcs; i++)
-            {
-                n.ChildNodes.Cast<XmlNode>().Skip(i * initialCapacity / numProcs);
-
-            }
-            */
 
             Dictionary<XmlNode, XmlNode> rename = new Dictionary<XmlNode, XmlNode>();
 
@@ -97,7 +83,7 @@ namespace Moor.XmlConversionLibrary.XmlToCsvStrategy
         {
             XmlDataSet = new DataSet();
 
-            this.qualify(xdoc.FirstChild, (qualifySep == null) ? "_" : qualifySep);
+            //this.qualify(xdoc.FirstChild, (qualifySep == null) ? "_" : qualifySep);
             
             byte[] byteArray = Encoding.ASCII.GetBytes(xdoc.OuterXml);
             MemoryStream stream = new MemoryStream(byteArray);

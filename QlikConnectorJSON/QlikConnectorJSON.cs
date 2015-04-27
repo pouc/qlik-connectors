@@ -207,6 +207,8 @@ namespace QlikConnectorJSON
             : this(url, method, auth, user, password)
         {
 
+            QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("MyWebRequest() : {0}", url));
+
             // Create POST data and convert it to a byte array.
             string postData = data;
             byte[] byteArray = Encoding.UTF8.GetBytes(postData);
@@ -377,6 +379,15 @@ namespace QlikConnectorJSON
                         { "GET", null },
                         { "POST", null }
                     }
+                },
+                new DriverParam() {
+                    paramType = DriverParamType.list,
+                    paramName = "Force Refresh",
+                    paramValueType = DriverParamValueType.s,
+                    paramValues = new Dictionary<string, List<DriverParam>> {
+                        { "True", null },
+                        { "False", null }
+                    }
                 }
             };
         }
@@ -434,7 +445,7 @@ namespace QlikConnectorJSON
 
                 XmlDocument doc = (XmlDocument) jsonSerializer.Deserialize(jr, typeof(XmlDocument));
 
-                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", doc.InnerXml.Substring(0, 5000)));
+                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", doc.InnerXml.Substring(0, Math.Min(5000, doc.InnerXml.Length))));
 
                 jr.Close();
                 q.CloseStreams(sr);
@@ -462,9 +473,14 @@ namespace QlikConnectorJSON
         {
             QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "+ getTables()");
 
-            if (this.connectParams.ContainsKey(args["Method"]) && this.connectParams[args["Method"]].ContainsKey(args["Params"]))
+            if (
+                args.ContainsKey("Force Refresh")
+                && (!Convert.ToBoolean(args["Force Refresh"]))
+                && this.connectParams.ContainsKey(args["Method"])
+                && this.connectParams[args["Method"]].ContainsKey(args["Params"])
+            )
             {
-                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables()");
+                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables() (from cache)");
                 return this.connectParams[args["Method"]][args["Params"]];
             }
 
@@ -477,6 +493,8 @@ namespace QlikConnectorJSON
                 List<QvxField> l = new List<QvxField>();
                 foreach (DataColumn dc in dt.Columns)
                 {
+                    QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Notice, "Found Column " + dc.ColumnName);
+
                     l.Add(new QvxField(dc.ColumnName, QvxFieldType.QVX_TEXT, QvxNullRepresentation.QVX_NULL_FLAG_SUPPRESS_DATA, FieldAttrType.ASCII));
                 }
 
@@ -491,7 +509,11 @@ namespace QlikConnectorJSON
             QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables()");
 
             if (!this.connectParams.ContainsKey(args["Method"])) this.connectParams.Add(args["Method"], new Dictionary<string, List<QvxTable>>());
-            this.connectParams[args["Method"]].Add(args["Params"], lt);
+
+            if (this.connectParams[args["Method"]].ContainsKey(args["Params"]))
+                this.connectParams[args["Method"]][args["Params"]] = lt;
+            else
+                this.connectParams[args["Method"]].Add(args["Params"], lt);
 
             return lt;
 
