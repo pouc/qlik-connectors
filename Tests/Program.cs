@@ -47,13 +47,6 @@ namespace Tests
                     AND Params = """ + id + @"""
                 ";
 
-
-
-
-
-
-
-
             string pattern =
                     "^" +
                     "SELECT" +
