@@ -87,57 +87,48 @@ define(['qvangular',
                 if ($scope.isEdit) {
                     var overrideCredentials = ($scope.username !== "" && $scope.password !== "");
 
-                    input.serverside.sendJsonRequest("createConnectionString",
+                    input.serverside.sendJsonRequest("storeParams",
 						[{
+						    paramName: 'qConnectionId',
+						    paramType: 0,
+						    paramValueType: 1,
+						    selectedValues: [{ Key: $scope.id, Value: null }]
+						}].concat([{
 						    paramName: 'qDriver',
 						    paramType: 0,
 						    paramValueType: 1,
 						    selectedValues: [{ Key: $scope.driverInput, Value: null }]
-						}].concat($scope.driverParams)
-					).then(function (info) {
-					    if (info.qOk) {
-					        input.serverside.modifyConnection(
-								$scope.id,
-								$scope.name,
-								createCustomConnectionString($scope.provider, info.qMessage),
-								$scope.provider,
-								true,
-								"FOO",
-								"BAR"
-							).then(function (result) {
-							    if (result) {
-							        $scope.destroyComponent();
-							    }
-							});
-					    }
-					});
+						}]).concat($scope.driverParams)
+					);
 
                 } else {
-                    input.serverside.sendJsonRequest("createConnectionString",
-						[{
-						    paramName: 'qDriver',
-						    paramType: 0,
-						    paramValueType: 1,
-						    selectedValues: [{ Key: $scope.driverInput, Value: null }]
-						}].concat($scope.driverParams)
-					).then(function (info) {
-					    if (info.qOk) {
-					        input.serverside.createNewConnection(
-								$scope.name,
-								createCustomConnectionString($scope.provider, "FOOBAR"),
-								"FOO",
-								"BAR"
-							).then(function (result) {
-							    if (result) {
+
+                    input.serverside.createNewConnection(
+						$scope.name,
+						createCustomConnectionString($scope.provider, "FOO=BAR"),
+						"FOO",
+						"BAR"
+					).then(function (result) {
+					    if (result) {
+					        input.serverside.sendJsonRequest("createConnectionString",
+								[{
+								    paramName: 'qConnectionId',
+								    paramType: 0,
+								    paramValueType: 1,
+								    selectedValues: [{ Key: result.qConnectionId, Value: null }]
+								}]
+							).then(function (info) {
+							    if (info.qOk) {
+
 							        input.serverside.modifyConnection(
-								        $scope.id,
-								        $scope.name,
-								        createCustomConnectionString($scope.provider, $scope.id),
-								        $scope.provider,
-								        true,
-								        "FOO",
-								        "BAR"
-							        )
+										result.qConnectionId,
+										$scope.name,
+										createCustomConnectionString($scope.provider, info.qMessage),
+										$scope.provider,
+										true,
+										"FOO",
+										"BAR"
+									);
 
 							        input.serverside.sendJsonRequest("storeParams",
 										[{
@@ -151,13 +142,18 @@ define(['qvangular',
 										    paramValueType: 1,
 										    selectedValues: [{ Key: $scope.driverInput, Value: null }]
 										}]).concat($scope.driverParams)
-									)
+									);
 
 							        $scope.destroyComponent();
+
 							    }
 							});
 					    }
 					});
+
+
+
+
                 }
             };
 
