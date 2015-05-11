@@ -209,24 +209,27 @@ namespace QlikConnectorJSON
 
             QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("MyWebRequest() : {0}", url));
 
-            // Create POST data and convert it to a byte array.
-            string postData = data;
-            byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+            if (data != null)
+            {
+                // Create POST data and convert it to a byte array.
+                string postData = data;
+                byte[] byteArray = Encoding.UTF8.GetBytes(postData);
 
-            // Set the ContentType property of the WebRequest.
-            request.ContentType = "application/x-www-form-urlencoded";
+                // Set the ContentType property of the WebRequest.
+                request.ContentType = "application/x-www-form-urlencoded";
 
-            // Set the ContentLength property of the WebRequest.
-            request.ContentLength = byteArray.Length;
+                // Set the ContentLength property of the WebRequest.
+                request.ContentLength = byteArray.Length;
 
-            // Get the request stream.
-            dataStream = request.GetRequestStream();
+                // Get the request stream.
+                dataStream = request.GetRequestStream();
 
-            // Write the data to the request stream.
-            dataStream.Write(byteArray, 0, byteArray.Length);
+                // Write the data to the request stream.
+                dataStream.Write(byteArray, 0, byteArray.Length);
 
-            // Close the Stream object.
-            dataStream.Close();
+                // Close the Stream object.
+                dataStream.Close();
+            }
 
         }
 
@@ -364,20 +367,21 @@ namespace QlikConnectorJSON
                     }
                 },
                 new DriverParam() {
-                    paramType = DriverParamType.label,
-                    paramName = "Params",
-                    paramValueType = DriverParamValueType.s,
-                    paramValues = new Dictionary<string, List<DriverParam>> {
-                        { "params", null }
-                    }
-                },
-                new DriverParam() {
                     paramType = DriverParamType.list,
                     paramName = "Http Method",
                     paramValueType = DriverParamValueType.s,
                     paramValues = new Dictionary<string, List<DriverParam>> {
                         { "GET", null },
-                        { "POST", null }
+                        { "POST", new List<DriverParam> () {
+                            new DriverParam() {
+                                paramType = DriverParamType.label,
+                                paramName = "Params",
+                                paramValueType = DriverParamValueType.s,
+                                paramValues = new Dictionary<string, List<DriverParam>> {
+                                    { "params", null }
+                                }
+                            }
+                        }}
                     }
                 },
                 new DriverParam() {
@@ -406,6 +410,8 @@ namespace QlikConnectorJSON
 
             MyWebRequest q;
 
+            string param = args["Method"] == "POST" ? args["Params"] : null;
+
             if (args.ContainsKey("Http Method"))
                 q = new MyWebRequest(
                     String.Format(
@@ -413,7 +419,7 @@ namespace QlikConnectorJSON
                         args["Host"],
                         args["Method"]
                     )
-                    , args["Http Method"], args["Params"], "None", null, null);
+                    , args["Http Method"], param, "None", null, null);
             else
                 throw new ArgumentOutOfRangeException();
 
@@ -473,15 +479,17 @@ namespace QlikConnectorJSON
         {
             QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "+ getTables()");
 
+            string param = args["Method"] == "POST" ? args["Params"] : "default";
+
             if (
                 args.ContainsKey("Force Refresh")
                 && (!Convert.ToBoolean(args["Force Refresh"]))
                 && this.connectParams.ContainsKey(args["Method"])
-                && this.connectParams[args["Method"]].ContainsKey(args["Params"])
+                && this.connectParams[args["Method"]].ContainsKey(param)
             )
             {
                 QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables() (from cache)");
-                return this.connectParams[args["Method"]][args["Params"]];
+                return this.connectParams[args["Method"]][param];
             }
 
             List<QvxTable> lt = new List<QvxTable>();
@@ -510,10 +518,10 @@ namespace QlikConnectorJSON
 
             if (!this.connectParams.ContainsKey(args["Method"])) this.connectParams.Add(args["Method"], new Dictionary<string, List<QvxTable>>());
 
-            if (this.connectParams[args["Method"]].ContainsKey(args["Params"]))
-                this.connectParams[args["Method"]][args["Params"]] = lt;
+            if (this.connectParams[args["Method"]].ContainsKey(param))
+                this.connectParams[args["Method"]][param] = lt;
             else
-                this.connectParams[args["Method"]].Add(args["Params"], lt);
+                this.connectParams[args["Method"]].Add(param, lt);
 
             return lt;
 
