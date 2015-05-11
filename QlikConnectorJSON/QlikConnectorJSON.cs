@@ -351,34 +351,71 @@ namespace QlikConnectorJSON
             return new List<DriverParam>
             {
                 new DriverParam() {
-                    paramType = DriverParamType.label,
-                    paramName = "Host",
+                    paramType = DriverParamType.list,
+                    paramName = "Location",
                     paramValueType = DriverParamValueType.s,
                     paramValues = new Dictionary<string, List<DriverParam>> {
-                        { "protocol://server:port", null }
-                    }
-                },
-                new DriverParam() {
-                    paramType = DriverParamType.label,
-                    paramName = "Method",
-                    paramValueType = DriverParamValueType.s,
-                    paramValues = new Dictionary<string, List<DriverParam>> {
-                        { "ping", null }
+                        { "File", new List<DriverParam> () {
+                            new DriverParam() {
+                                paramType = DriverParamType.label,
+                                paramName = "File Name",
+                                paramValueType = DriverParamValueType.s,
+                                paramValues = new Dictionary<string, List<DriverParam>> {
+                                    { "C:\\example.json", null }
+                                }
+                            }}
+                        },
+                        { "Web", new List<DriverParam> () {
+                            new DriverParam() {
+                                paramType = DriverParamType.label,
+                                paramName = "Host",
+                                paramValueType = DriverParamValueType.s,
+                                paramValues = new Dictionary<string, List<DriverParam>> {
+                                    { "protocol://server:port", null }
+                                }
+                            },
+                            new DriverParam() {
+                                paramType = DriverParamType.label,
+                                paramName = "Method",
+                                paramValueType = DriverParamValueType.s,
+                                paramValues = new Dictionary<string, List<DriverParam>> {
+                                    { "ping", null }
+                                }
+                            },
+                            new DriverParam() {
+                                paramType = DriverParamType.list,
+                                paramName = "Http Method",
+                                paramValueType = DriverParamValueType.s,
+                                paramValues = new Dictionary<string, List<DriverParam>> {
+                                    { "GET", null },
+                                    { "POST", new List<DriverParam> () {
+                                        new DriverParam() {
+                                            paramType = DriverParamType.label,
+                                            paramName = "Params",
+                                            paramValueType = DriverParamValueType.s,
+                                            paramValues = new Dictionary<string, List<DriverParam>> {
+                                                { "params", null }
+                                            }
+                                        }
+                                    }}
+                                }
+                            }
+                        }}
                     }
                 },
                 new DriverParam() {
                     paramType = DriverParamType.list,
-                    paramName = "Http Method",
+                    paramName = "Qualify",
                     paramValueType = DriverParamValueType.s,
                     paramValues = new Dictionary<string, List<DriverParam>> {
-                        { "GET", null },
-                        { "POST", new List<DriverParam> () {
+                        { "False", null },
+                        { "True", new List<DriverParam> () {
                             new DriverParam() {
                                 paramType = DriverParamType.label,
-                                paramName = "Params",
+                                paramName = "Qualify Sep",
                                 paramValueType = DriverParamValueType.s,
                                 paramValues = new Dictionary<string, List<DriverParam>> {
-                                    { "params", null }
+                                    { "_", null }
                                 }
                             }
                         }}
@@ -389,8 +426,8 @@ namespace QlikConnectorJSON
                     paramName = "Force Refresh",
                     paramValueType = DriverParamValueType.s,
                     paramValues = new Dictionary<string, List<DriverParam>> {
-                        { "True", null },
-                        { "False", null }
+                        { "False", null },
+                        { "True", null }
                     }
                 }
             };
@@ -408,57 +445,73 @@ namespace QlikConnectorJSON
             QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", args.Count));
             QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", String.Join(", ", args.Select(kv => String.Format("{0} : {1}", kv.Key, kv.Value)))));
 
-            MyWebRequest q;
+            
+            string response = null;
 
-            string param = args["Method"] == "POST" ? args["Params"] : null;
 
-            if (args.ContainsKey("Http Method"))
-                q = new MyWebRequest(
-                    String.Format(
-                        "{0}/{1}",
-                        args["Host"],
-                        args["Method"]
-                    )
-                    , args["Http Method"], param, "None", null, null);
+            if (args["Location"] == "File")
+            {
+                response = File.ReadAllText(args["File Name"], Encoding.UTF8);
+            }
             else
-                throw new ArgumentOutOfRangeException();
+            {
+                MyWebRequest q;
 
-            QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "getRawTables() : request prepared");
+                string param = args["Method"] == "POST" ? args["Params"] : null;
 
-            //string s = q.GetResponse();
-            //QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : response : {0}", s.Substring(0, 50)));
+                if (args.ContainsKey("Http Method"))
+                    q = new MyWebRequest(
+                        String.Format(
+                            "{0}/{1}",
+                            args["Host"],
+                            args["Method"]
+                        )
+                        , args["Http Method"], param, "None", null, null);
+                else
+                    throw new ArgumentOutOfRangeException();
 
-            StreamReader sr = q.GetResponseStream();
+                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "getRawTables() : request prepared");
 
-            QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", q.StatusCode));
+                //string s = q.GetResponse();
+                //QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : response : {0}", s.Substring(0, 50)));
+
+                response = q.GetResponse();
+                if (q.StatusCode != HttpStatusCode.OK) response = null;
+
+                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", q.StatusCode));
+            }
+
+            
 
             List<QvxTable> lt = new List<QvxTable>();
-            if (q.StatusCode == HttpStatusCode.OK)
+            if (response != null)
             {
-                JsonSerializer js = new JsonSerializer();
-                JsonTextReader jr = new JsonTextReader(sr);
+                XmlDocument doc;
+                using (JsonTextReader jr = new JsonTextReader(new StringReader(response)))
+                {
+                    QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : deserializing document"));
 
-                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : deserializing document"));
+                    XmlNodeConverter converter = new XmlNodeConverter();
+                    converter.DeserializeRootElementName = "root";
+                    converter.WriteArrayAttribute = false;
 
-                XmlNodeConverter converter = new XmlNodeConverter();
-                converter.DeserializeRootElementName = "root";
-                converter.WriteArrayAttribute = false;
+                    JsonSerializerSettings settings = new JsonSerializerSettings { Converters = new JsonConverter[] { converter } };
 
-                JsonSerializerSettings settings = new JsonSerializerSettings { Converters = new JsonConverter[] { converter } };
+                    JsonSerializer jsonSerializer = JsonSerializer.CreateDefault(settings);
+                    jsonSerializer.CheckAdditionalContent = true;
 
-                JsonSerializer jsonSerializer = JsonSerializer.CreateDefault(settings);
-                jsonSerializer.CheckAdditionalContent = true;
+                    doc = (XmlDocument)jsonSerializer.Deserialize(jr, typeof(XmlDocument));
 
-                XmlDocument doc = (XmlDocument) jsonSerializer.Deserialize(jr, typeof(XmlDocument));
+                    QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", doc.InnerXml.Substring(0, Math.Min(5000, doc.InnerXml.Length))));
 
-                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : {0}", doc.InnerXml.Substring(0, Math.Min(5000, doc.InnerXml.Length))));
-
-                jr.Close();
-                q.CloseStreams(sr);
+                }
 
                 QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, String.Format("getRawTables() : JSON deserialized"));
 
-                XmlToCsvUsingDataSetFromString csvConverter = new XmlToCsvUsingDataSetFromString(doc, null);
+                string qualifySep = null;
+                if (args.ContainsKey("Qualify") && Convert.ToBoolean(args["Qualify"])) qualifySep = args["Qualify Sep"];
+
+                XmlToCsvUsingDataSetFromString csvConverter = new XmlToCsvUsingDataSetFromString(doc, qualifySep, "_");
                 XmlToCsvContext context = new XmlToCsvContext(csvConverter);
 
                 QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "getRawTables() : converted to xml");
@@ -479,20 +532,36 @@ namespace QlikConnectorJSON
         {
             QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "+ getTables()");
 
-            string param = args["Method"] == "POST" ? args["Params"] : "default";
-
-            if (
-                args.ContainsKey("Force Refresh")
-                && (!Convert.ToBoolean(args["Force Refresh"]))
-                && this.connectParams.ContainsKey(args["Method"])
-                && this.connectParams[args["Method"]].ContainsKey(param)
-            )
-            {
-                QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables() (from cache)");
-                return this.connectParams[args["Method"]][param];
-            }
-
             List<QvxTable> lt = new List<QvxTable>();
+
+            if (args["Location"] == "File")
+            {
+                if (
+                    args.ContainsKey("Force Refresh")
+                    && (!Convert.ToBoolean(args["Force Refresh"]))
+                    && this.connectParams.ContainsKey("File")
+                    && this.connectParams["File"].ContainsKey(args["File Name"])
+                )
+                {
+                    QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables() (from cache)");
+                    return this.connectParams["File"][args["File Name"]];
+                }
+            }
+            else
+            {
+                string param = args["Method"] == "POST" ? args["Params"] : "default";
+
+                if (
+                    args.ContainsKey("Force Refresh")
+                    && (!Convert.ToBoolean(args["Force Refresh"]))
+                    && this.connectParams.ContainsKey(args["Method"])
+                    && this.connectParams[args["Method"]].ContainsKey(param)
+                )
+                {
+                    QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables() (from cache)");
+                    return this.connectParams[args["Method"]][param];
+                }
+            }
 
             foreach (DataTable dt in this.getRawTables(database, args))
             {
@@ -510,18 +579,32 @@ namespace QlikConnectorJSON
                 mt.TableName = dt.TableName;
                 mt.GetRows = delegate() { return GetJSONRows(dt, mt); };
                 mt.Fields = l.ToArray();
-                    
+
                 lt.Add(mt);
             }
 
-            QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables()");
+            if (args["Location"] == "File")
+            {
+                if (!this.connectParams.ContainsKey("File")) this.connectParams.Add("File", new Dictionary<string, List<QvxTable>>());
 
-            if (!this.connectParams.ContainsKey(args["Method"])) this.connectParams.Add(args["Method"], new Dictionary<string, List<QvxTable>>());
-
-            if (this.connectParams[args["Method"]].ContainsKey(param))
-                this.connectParams[args["Method"]][param] = lt;
+                if (this.connectParams["File"].ContainsKey(args["File Name"]))
+                    this.connectParams["File"][args["File Name"]] = lt;
+                else
+                    this.connectParams["File"].Add(args["File Name"], lt);
+            }
             else
-                this.connectParams[args["Method"]].Add(param, lt);
+            {
+                string param = args["Method"] == "POST" ? args["Params"] : "default";
+
+                if (!this.connectParams.ContainsKey(args["Method"])) this.connectParams.Add(args["Method"], new Dictionary<string, List<QvxTable>>());
+
+                if (this.connectParams[args["Method"]].ContainsKey(param))
+                    this.connectParams[args["Method"]][param] = lt;
+                else
+                    this.connectParams[args["Method"]].Add(param, lt);
+            }
+
+            QvxLog.Log(QvxLogFacility.Application, QvxLogSeverity.Debug, "- getTables()");
 
             return lt;
 

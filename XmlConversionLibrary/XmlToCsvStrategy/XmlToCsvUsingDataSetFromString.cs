@@ -11,19 +11,83 @@ using System.Xml.Schema;
 using System.Xml.XPath;
 using System.Xml.Xsl;
 
+using System.Xml.Linq;
+
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 
 namespace Moor.XmlConversionLibrary.XmlToCsvStrategy
 {
+    public static class DocumentExtensions
+    {
+        public static XmlDocument ToXmlDocument(this XDocument xDocument)
+        {
+            var xmlDocument = new XmlDocument();
+            using (var xmlReader = xDocument.CreateReader())
+            {
+                xmlDocument.Load(xmlReader);
+            }
+            return xmlDocument;
+        }
+
+        public static XDocument ToXDocument(this XmlDocument xmlDocument)
+        {
+            using (var nodeReader = new XmlNodeReader(xmlDocument))
+            {
+                nodeReader.MoveToContent();
+                return XDocument.Load(nodeReader);
+            }
+        }
+    }
+
     public class XmlToCsvUsingDataSetFromString : XmlToCsvStrategyBase, IDisposable
     {
         private string _csvDestinationFilePath;
         private DataTable _workingTable;
 
         public XmlToCsvUsingDataSetFromString(XmlDocument xmlSource)
-            : this(xmlSource, null)
+            : this(xmlSource, "_", "_")
         {
 
+        }
+
+        public XmlToCsvUsingDataSetFromString(XmlDocument xmldoc, string qualifySep, string prefix)
+        {
+            XmlDataSet = new DataSet();
+
+            this.prefix(xmldoc.FirstChild, prefix);
+
+            if (qualifySep != null)
+            {
+                XDocument xdoc = xmldoc.ToXDocument();
+                this.qualify(xdoc.Elements().First(), qualifySep);
+                xmldoc = xdoc.ToXmlDocument();
+            }
+
+            byte[] byteArray = Encoding.ASCII.GetBytes(xmldoc.OuterXml);
+            MemoryStream stream = new MemoryStream(byteArray);
+
+            try
+            {
+                XmlDataSet.ReadXml(stream);
+
+                foreach (DataTable table in XmlDataSet.Tables)
+                {
+                    TableNameCollection.Add(table.TableName);
+                }
+            }
+            catch (ArgumentException)
+            {
+                stream.Position = 0;
+                XmlDataSet.ReadXml(stream, XmlReadMode.IgnoreSchema);
+
+                foreach (DataTable table in XmlDataSet.Tables)
+                {
+                    TableNameCollection.Add(table.TableName);
+                }
+
+                RenameDuplicateColumn();
+            }
         }
 
         public Dictionary<string, string> exploreXSD(XmlSchemaElement e)
@@ -50,66 +114,41 @@ namespace Moor.XmlConversionLibrary.XmlToCsvStrategy
             return l;
         }
 
-        public void qualify(XmlNode n, string sep)
+
+
+        public void qualify(XElement n, string sep)
         {
-
-
             Dictionary<XmlNode, XmlNode> rename = new Dictionary<XmlNode, XmlNode>();
 
-            foreach (XmlNode cn in n.ChildNodes)
+            if (n.Parent != null)
             {
-                
-                if (cn.NodeType == XmlNodeType.Element)
-                {
-                    XmlNode nn = cn.OwnerDocument.CreateElement(n.Name + sep + cn.Name);
-                    while (cn.HasChildNodes) nn.AppendChild(cn.FirstChild);
-                    rename.Add(cn, nn);
-                }
+                n.Name = n.Parent.Name + sep + n.Name;
 
             }
 
-            foreach (KeyValuePair<XmlNode, XmlNode> kpvnn in rename)
-            {
-                n.ReplaceChild(kpvnn.Value, kpvnn.Key);
-            }
-
-            foreach (XmlNode cn in n.ChildNodes)
+            foreach (XElement cn in n.Elements())
             {
                 this.qualify(cn, sep);
             }
         }
 
-        public XmlToCsvUsingDataSetFromString(XmlDocument xdoc, string qualifySep)
+        public void prefix(XmlNode n, string sep)
         {
-            XmlDataSet = new DataSet();
-
-            //this.qualify(xdoc.FirstChild, (qualifySep == null) ? "_" : qualifySep);
-            
-            byte[] byteArray = Encoding.ASCII.GetBytes(xdoc.OuterXml);
-            MemoryStream stream = new MemoryStream(byteArray);
-
-            try
+            if (n.NodeType == XmlNodeType.Element && n.Name != null && !Regex.Match(n.Name, "^[a-zA-Z]").Success)
             {
-                XmlDataSet.ReadXml(stream);
+                XmlNode nn = n.OwnerDocument.CreateElement(sep + n.Name);
+                while (n.HasChildNodes) nn.AppendChild(n.FirstChild);
+                n.ParentNode.ReplaceChild(nn, n);
 
-                foreach (DataTable table in XmlDataSet.Tables)
-                {
-                    TableNameCollection.Add(table.TableName);
-                }
+                nn.ChildNodes.Cast<XmlNode>().ToList().ForEach(cn => this.prefix(cn, sep));
             }
-            catch (ArgumentException)
+            else
             {
-                stream.Position = 0;
-                XmlDataSet.ReadXml(stream, XmlReadMode.IgnoreSchema);
-
-                foreach (DataTable table in XmlDataSet.Tables)
-                {
-                    TableNameCollection.Add(table.TableName);
-                }
-
-                RenameDuplicateColumn();
+                n.ChildNodes.Cast<XmlNode>().ToList().ForEach(cn => this.prefix(cn, sep));
             }
         }
+
+
 
         public DataSet XmlDataSet { get; private set; }
 
