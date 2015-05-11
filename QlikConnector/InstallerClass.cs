@@ -35,7 +35,7 @@ namespace QlikConnector
         {
             base.Install(stateSaver);
 
-            this.startProcess("cmd.exe", "/C icacls \"{0}\\connections\" /grant \"{1}\":(OI)(CI)M", this.Context.Parameters["path"], this.Context.Parameters["user"]);
+            this.startProcess("cmd.exe", "/C icacls \"{0}\\connections\" /grant {1}:(OI)(CI)M", this.Context.Parameters["path"], this.Context.Parameters["user"]);
             this.startProcess("cmd.exe", "/C del \"{0}\\verpatch.exe\"", this.Context.Parameters["path"]);
         }
     }
