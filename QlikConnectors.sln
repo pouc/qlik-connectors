@@ -7,13 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QlikConnector", "QlikConnec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QlikConnectorInterface", "QlikConnectorInterface\QlikConnectorInterface.csproj", "{1B16B806-EDFE-4C10-9C32-3D836D73DE52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QlikConnectorTest", "QlikConnectorTest\QlikConnectorTest.csproj", "{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QlikConnectorJSON", "QlikConnectorJSON\QlikConnectorJSON.csproj", "{DD46E8EA-03F3-481A-B158-2CDE0B807304}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlConversionLibrary", "XmlConversionLibrary\XmlConversionLibrary.csproj", "{E7E0B0F3-C4E0-4633-9F81-F998933E6832}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{02A4EF7D-B891-49AF-8609-DFC041179E2B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,13 +33,6 @@ Global
 		{1B16B806-EDFE-4C10-9C32-3D836D73DE52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B16B806-EDFE-4C10-9C32-3D836D73DE52}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B16B806-EDFE-4C10-9C32-3D836D73DE52}.Release|x64.ActiveCfg = Release|Any CPU
-		{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}.Debug|x64.Build.0 = Debug|Any CPU
-		{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DB2A8C6B-0C6D-4263-ADDE-FF6F45786A31}.Release|x64.ActiveCfg = Release|Any CPU
 		{DD46E8EA-03F3-481A-B158-2CDE0B807304}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DD46E8EA-03F3-481A-B158-2CDE0B807304}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD46E8EA-03F3-481A-B158-2CDE0B807304}.Debug|x64.ActiveCfg = Debug|x64
@@ -59,13 +48,6 @@ Global
 		{E7E0B0F3-C4E0-4633-9F81-F998933E6832}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7E0B0F3-C4E0-4633-9F81-F998933E6832}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E7E0B0F3-C4E0-4633-9F81-F998933E6832}.Release|x64.ActiveCfg = Release|Any CPU
-		{02A4EF7D-B891-49AF-8609-DFC041179E2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02A4EF7D-B891-49AF-8609-DFC041179E2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02A4EF7D-B891-49AF-8609-DFC041179E2B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{02A4EF7D-B891-49AF-8609-DFC041179E2B}.Debug|x64.Build.0 = Debug|Any CPU
-		{02A4EF7D-B891-49AF-8609-DFC041179E2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02A4EF7D-B891-49AF-8609-DFC041179E2B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02A4EF7D-B891-49AF-8609-DFC041179E2B}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
