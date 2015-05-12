@@ -15,3 +15,5 @@ It requires .net 4.5
 Use at your own risks. No support will be provided!
 
 Also this work was done buy a Qlik Employee in his spare time. This work was not done by Qlik and will thus NOT BE SUPPORTED by Qlik.
+
+Please use Github to provide feedback or to help.
