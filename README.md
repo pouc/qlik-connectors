@@ -1,4 +1,4 @@
-# QlikConnectors
+# qlik-connectors
 
 This is a QVX wrapper for Qlik Sense
 
