@@ -1,0 +1,137 @@
+﻿<div class="simpleconnector-select-parent">
+	<div class="simpleconnector-select-left">
+		<div>
+			<div class="connsdk-odbc-propertyconfig">
+				<table class="connsdk-odbc-propertyconfig__vertical-container">
+					<tr class="connsdk-odbc-propertyconfig__vertical-container__row connsdk-odbc-propertyconfig__vertical-container__row--label">
+						<td class="connsdk-odbc-propertyconfig__vertical-container__cell">
+							<div class="connsdk-odbc-propertylabel">
+								<div>
+									<label class="lui-label connsdk-odbc-propertylabel__default">
+										<div>Database</div>
+									</label>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<tr class="connsdk-odbc-propertyconfig__vertical-container__row">
+						<td class="connsdk-odbc-propertyconfig__vertical-container__cell">
+							<div class="connsdk-odbc-property-container">
+								<div class="connsdk-odbc-property-container__inner">
+									<div class="select-input-container">
+										<input class="lui-input select-input-placeholder" style="border: none; position: absolute; width: auto;" value="Select Database..." ng-hide="databaseInput" />
+										<lui-select x-model="databaseInput" x-options="database.qName for database in databases" x-change="onDatabaseInputChanged()">
+										</lui-select>
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="connsdk-odbc-propertyconfig">
+				<table class="connsdk-odbc-propertyconfig__vertical-container">
+					<tr class="connsdk-odbc-propertyconfig__vertical-container__row connsdk-odbc-propertyconfig__vertical-container__row--label">
+						<td class="connsdk-odbc-propertyconfig__vertical-container__cell">
+							<div class="connsdk-odbc-propertylabel">
+								<div>
+									<label class="lui-label connsdk-odbc-propertylabel__default">
+										<div>Owner</div>
+									</label>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<tr class="connsdk-odbc-propertyconfig__vertical-container__row">
+						<td class="connsdk-odbc-propertyconfig__vertical-container__cell">
+							<div class="connsdk-odbc-property-container">
+								<div class="connsdk-odbc-property-container__inner">
+									<div class="select-input-container">
+										<input class="lui-input select-input-placeholder" style="border: none; position: absolute; width: auto;" value="Select Owner..." ng-hide="ownerInput" />
+										<lui-select x-model="ownerInput" x-options="owner.qName for owner in owners" x-change="onOwnerInputChanged()">
+										</lui-select>
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="simpleconnector-select-tablelist-container">
+			<div class="simpleconnector-select-tablelist-container__titlebar">
+				<div class="simpleconnector-select-tablelist-container__title">Tables</div>
+				<button class="lui-fade-button">
+                    <span class="lui-fade-button__icon lui-icon lui-icon--expand"></span>
+                </button>
+			</div>
+			
+			<div class="simpleconnector-select-tablelist-container__filter lui-search" style="min-height: 38px">
+				<span class="lui-search__search-icon"></span>
+				<input class="lui-search__input" maxlength="128" type="text" placeholder="Filtrer les tables">
+				<span class="lui-icon lui-icon--close"></span>
+			</div>
+			
+			<div class="simpleconnector-select-tablepanel">
+				<ul class="simpleconnector-select-tablepanel__tablelist" style="position: relative;">
+					<li class="simpleconnector-select-tablepanel__listitem" ng-class="{'simpleconnector-select-tablepanel__listitem--selected': isTableSelected(table)}" style="transform: translateY(0px);" ng-repeat="table in tables" ng-click="onTableShowClick(table); event.stopPropagation();" >
+						<div class="simpleconnector-select-tablepanel__listitem__container">
+							<div class="simpleconnector-select-tablepanel__listitem__container__left-side">
+								<label class="lui-checkbox">
+									<input class="lui-checkbox__input" ng-click="onTableCheckboxClick(table); event.stopPropagation();" type="checkbox" ng-checked="table.checked" qva-indeterminate="table.indeterminate">
+									<div class="lui-checkbox__check-wrap">
+										<span class="lui-checkbox__check"></span>
+									</div>
+								</label>
+								<div class="simpleconnector-select-tablepanel__listitem__name">
+									<span>{{ table.qName }}</span>
+								</div>
+							</div>
+
+							<div class="simpleconnector-select-tablepanel__listitem__container__right-side">
+								<div class="simpleconnector-select-tablepanel__listitem__field-count">
+									<div>{{ getNumberOfFields(table) }}</div>
+								</div>
+							</div>
+						</div>
+						
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="simpleconnector-select-right">
+		<div class="simpleconnector-select-preview-container">
+			<div class="simpleconnector-select-fielddata">
+				<table class="simpleconnector-select-griddata">
+					<tbody>
+						<tr class="simpleconnector-select-griddata__row">
+							<th class="simpleconnector-select-griddata__header simpleconnector-select-griddata__header--selected" ng-repeat="field in selectedTable.fields">
+								<div class="simpleconnector-select-griddata__header__container">
+									<label class="lui-checkbox simpleconnector-select-griddata__header__checkbox">
+										<input class="lui-checkbox__input" type="checkbox" ng-checked="field.checked" ng-click="onFieldCheckboxClick(field); event.stopPropagation();">
+										<div class="lui-checkbox__check-wrap">
+											<span class="lui-checkbox__check"></span>
+										</div>
+									</label>
+									<div class="simpleconnector-select-griddata__header__labelcontainer">
+										<div class="simpleconnector-select-griddata__header__static-alias" title="{{ field.qName }}">{{ field.qName }}</div>
+									</div>
+								</div>
+							</th>
+						</tr>
+						
+						<tr class="simpleconnector-select-griddata__row" ng-repeat="row in selectedTable.preview">
+							<td class="simpleconnector-select-griddata__cell" ng-repeat="col in row.qValues track by $index">
+								{{col}}
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+

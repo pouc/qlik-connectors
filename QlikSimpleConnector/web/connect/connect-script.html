@@ -1,0 +1,90 @@
+﻿<div class="qui-modalbackground customconnectorconnectcontainer">
+	<div class="qui-delayedModal connectorconnectdialog" qv-global-escape="onEscape()">
+	
+		<header class="dm-header">
+			<label style="display:inline;float:left">{{titleText}}</label>
+
+			<button data-icon="info" class="lui-fade-button" ng-click="showInfo('info')" title="Show information about this connector">
+				<span class="lui-fade-button__icon  lui-icon lui-icon--info"></span>
+			</button>
+			
+			<button data-icon="help" class="lui-fade-button" ng-click="showHelp()" title="Open the online help for this connector">
+				<span class="lui-fade-button__icon  lui-icon lui-icon--help"></span>
+			</button>
+		</header>
+
+		<div class="main">
+			<table>
+				<tr>
+					<td>
+						Connection name
+					</td>
+					<td>
+						<input type="text" ng-model="name" placeholder="Connection name" />
+					</td>
+				</tr>
+				
+				<tr ng-show="drivers != null">
+					<td>
+						Driver
+					</td>
+					<td>
+						<span class="nullable">
+							<select ng-model="driverInput" ng-options="driver for driver in drivers" ng-change="onDriverInputClicked()">
+								<option value="">Select a driver...</option>
+							</select>
+						</span>
+					</td>
+				</tr>
+			
+				<tbody ng-repeat="(driverParamInputIndex, driverParam) in driverParams">
+					<tr>
+						<td ng-if="driverParam.paramType == 0">
+							{{driverParam.paramName}}
+						</td>
+						<td ng-if="driverParam.paramType == 0">
+							<input ng-model="driverParam.selectedValues[0].Key" ng-init="driverParam.selectedValues = [ driverParam.paramValues[0] ]" ng-change="clearConnection()">
+							</input>
+						</td>
+						<td ng-if="driverParam.paramType == 1">
+							{{driverParam.paramName}}
+						</td>
+						<td ng-if="driverParam.paramType == 1">
+							<select ng-model="driverParam.selectedValues[0]" ng-init="driverParam.selectedValues = [ driverParam.paramValues[0] ]" ng-options="item as item.Key for item in driverParam.paramValues" ng-change="clearConnection()">
+							</select>
+						</td>
+					</tr>
+					
+					<tr ng-repeat="(driverSubParamInputIndex, driverSubParam) in driverParam.selectedValues[0].Value">
+						<td ng-if="driverSubParam.paramType == 0">
+							{{driverSubParam.paramName}}
+						</td>
+						<td ng-if="driverSubParam.paramType == 0">
+							<input ng-model="driverSubParam.selectedValues[0].Key" ng-init="driverSubParam.selectedValues = [ driverSubParam.paramValues[0] ]" ng-change="clearConnection()">
+							</input>
+						</td>
+						<td ng-if="driverSubParam.paramType == 1">
+							{{driverSubParam.paramName}}
+						</td>
+						<td ng-if="driverSubParam.paramType == 1">
+							<select ng-model="driverSubParam.selectedValues[0]" ng-init="driverSubParam.selectedValues = [ driverSubParam.paramValues[0] ]" ng-options="item as item.Key for item in driverSubParam.paramValues" ng-change="clearConnection()">
+							</select>
+						</td>
+					</tr>
+					
+				</tbody>
+			</table>
+			
+			
+		</div>
+
+		<div class="driverInfo" ng-class="{'success': driverSuccessful}">{{driverInfo}}</div>
+		<div class="connectionInfo" ng-class="{'success': connectionSuccessful}">{{connectionInfo}}</div>
+
+		<div class="footer" ng-if="!isDm">
+			<button ng-click="onCancelClicked()">Cancel</button>
+			<button ng-click="onTestConnectionClicked()">Test Connection</button>
+			<button ng-click="onOKClicked()" ng-disabled="!isOkEnabled()" q-translation="{{saveButtonText}}"></button>
+		</div>
+	</div>
+</div>
